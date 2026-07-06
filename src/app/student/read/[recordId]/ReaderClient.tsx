@@ -142,7 +142,6 @@ export default function ReaderClient({ recordId, book }: Props) {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col h-screen overflow-hidden">
-      <!-- Reader Header -->
       <header className="bg-white border-bottom border-slate-200/80 px-6 py-4 flex justify-between items-center shadow-xs shrink-0">
         <div className="flex items-center gap-3">
           <Link href="/student" className="text-slate-500 hover:text-slate-800 font-bold text-sm select-none">
@@ -156,7 +155,6 @@ export default function ReaderClient({ recordId, book }: Props) {
         </div>
 
         <div className="flex items-center gap-4">
-          <!-- Active Clock -->
           <div className="flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-1.5 border border-slate-200/50">
             <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
             <span className="text-xs font-mono font-bold text-slate-700">{formatTime(seconds)}</span>
@@ -172,10 +170,8 @@ export default function ReaderClient({ recordId, book }: Props) {
         </div>
       </header>
 
-      <!-- Layout Split Screen -->
       <div className="flex-1 flex overflow-hidden">
         
-        <!-- Left Side: Book content viewer -->
         <main 
           onMouseUp={handleTextHighlight}
           className="flex-1 overflow-y-auto px-8 md:px-16 py-10 bg-white leading-relaxed text-slate-800 text-lg selection:bg-violet-200/80 font-serif max-w-4xl mx-auto border-r border-slate-100"
@@ -187,10 +183,8 @@ export default function ReaderClient({ recordId, book }: Props) {
           ))}
         </main>
 
-        <!-- Right Side: Dashboard widgets -->
         <aside className="w-80 border-l border-slate-200/80 bg-slate-50 overflow-y-auto p-6 flex flex-col gap-6 shrink-0 hidden md:flex">
           
-          <!-- Logging Telemetry widget -->
           <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col gap-3">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Session Tracking</h3>
             {logSuccess && (
@@ -207,7 +201,6 @@ export default function ReaderClient({ recordId, book }: Props) {
             </div>
           </div>
 
-          <!-- Vocabulary Assistant Widget (The Scholastic Differentiator) -->
           <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex-1 flex flex-col gap-4">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Vocabulary Assistant</h3>
             

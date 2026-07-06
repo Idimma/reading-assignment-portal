@@ -37,7 +37,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      <!-- Background glow -->
       <div className="absolute top-[-10%] left-[20%] w-[50vw] h-[50vw] bg-radial from-violet-100 to-transparent blur-3xl -z-10 pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -108,7 +107,6 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <!-- Quick Test Credentials Box -->
           <div className="mt-8 border-t border-slate-100 pt-6">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider text-center">
               Quick Test Accounts

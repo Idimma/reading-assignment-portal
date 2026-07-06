@@ -72,7 +72,6 @@ export default function StudentDashboard({ initialReadings }: Props) {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <!-- Navbar -->
       <header className="bg-white border-bottom border-slate-200/80 sticky top-0 z-10 shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="bg-emerald-600 text-white font-bold text-lg w-9 h-9 rounded-xl flex items-center justify-center">S</div>
@@ -88,7 +87,6 @@ export default function StudentDashboard({ initialReadings }: Props) {
 
       <main className="flex-1 max-w-6xl w-full mx-auto p-6 md:p-8 flex flex-col gap-8">
         
-        <!-- Dashboard Header -->
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight">My Reading Assignments</h2>
           <p className="text-sm text-slate-500">View assigned books, log reading session logs, and update status.</p>
@@ -107,13 +105,11 @@ export default function StudentDashboard({ initialReadings }: Props) {
                 key={item.recordId} 
                 className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between gap-5 relative overflow-hidden"
               >
-                <!-- Overdue Top Border Accent -->
                 {item.isOverdue && (
                   <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-500" />
                 )}
 
                 <div className="flex gap-4">
-                  <!-- Book Info -->
                   <div className="flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`px-2 py-0.5 text-xxs font-bold uppercase border rounded-md ${getStatusColor(item.status)}`}>
@@ -135,7 +131,6 @@ export default function StudentDashboard({ initialReadings }: Props) {
                     </div>
                   </div>
 
-                  <!-- Minutes Progress Wheel/Indicator -->
                   <div className="flex flex-col items-center justify-center p-3 border border-slate-100 rounded-xl bg-slate-50/50 min-w-[90px]">
                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Minutes</div>
                     <div className="text-2xl font-black text-slate-800 mt-1">{item.minutesRead}</div>
@@ -143,7 +138,6 @@ export default function StudentDashboard({ initialReadings }: Props) {
                   </div>
                 </div>
 
-                <!-- Footer Operations -->
                 <div className="border-t border-slate-100 pt-4 flex justify-between items-center flex-wrap gap-2">
                   <button
                     onClick={() => handleStatusToggle(item.recordId, item.status)}

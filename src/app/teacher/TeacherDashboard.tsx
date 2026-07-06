@@ -72,7 +72,6 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      <!-- Top navbar -->
       <header className="bg-white border-bottom border-slate-200/80 sticky top-0 z-10 shadow-sm px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="bg-violet-600 text-white font-bold text-lg w-9 h-9 rounded-xl flex items-center justify-center">I</div>
@@ -88,7 +87,6 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 flex flex-col gap-8">
         
-        <!-- Welcome Summary Banner -->
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Active Assignments</h2>
@@ -130,7 +128,6 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {assignments.map((item) => (
                   <React.Fragment key={item.id}>
-                    <!-- Primary Assignment Row -->
                     <tr 
                       className={`hover:bg-slate-50/50 cursor-pointer transition-all ${expandedId === item.id ? 'bg-slate-50/30' : ''}`}
                       onClick={() => toggleExpand(item.id)}
@@ -175,7 +172,6 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
                       </td>
                     </tr>
 
-                    <!-- Expandable Student Details Row -->
                     {expandedId === item.id && (
                       <tr>
                         <td colSpan={6} className="bg-slate-50/30 px-6 py-4 border-t border-slate-100">

@@ -85,7 +85,6 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
               </div>
             )}
 
-            <!-- Classroom Selector -->
             <div>
               <label className="block text-base font-bold text-slate-900 mb-2">
                 1. Select Classroom Roster
@@ -104,7 +103,6 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
               </select>
             </div>
 
-            <!-- Book Catalog Selector Grid -->
             <div>
               <label className="block text-base font-bold text-slate-900 mb-3">
                 2. Choose a Book from Catalog
@@ -140,7 +138,6 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
               </div>
             </div>
 
-            <!-- Due Date Picker -->
             <div>
               <label className="block text-base font-bold text-slate-900 mb-2">
                 3. Choose Due Date
