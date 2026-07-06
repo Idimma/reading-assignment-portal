@@ -1,5 +1,5 @@
 -- Database Idempotent Seed File: seed.sql
--- Pre-populates teachers, students, classrooms, books, assignments, and sessions using strictly valid hex v4 UUIDs and GoTrue-compliant auth metas.
+-- Pre-populates teachers, students, classrooms, books, assignments, and sessions using strictly valid hex v4 UUIDs and database-generated pgcrypto hashes.
 
 -- Clear existing seed data to ensure idempotency
 truncate table public.reading_sessions cascade;
@@ -11,18 +11,17 @@ truncate table public.classrooms cascade;
 delete from public.profiles;
 delete from auth.users;
 
--- 1. Seed Supabase Auth Users (with GoTrue compliance metadata JSONs)
--- Password hash for 'Demo1234!' (bcrypt encrypted)
--- hash: '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.'
+-- 1. Seed Supabase Auth Users
+-- Generates passwords on-the-fly using PostgreSQL's crypt extension to avoid static hash truncation/format errors.
 insert into auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, role, aud, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, is_sso_user) values
-  ('d1a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher1@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
-  ('d2a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher2@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
-  ('e1b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student1@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
-  ('e2b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student2@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
-  ('e3b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student3@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
-  ('e4b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student4@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
-  ('e5b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student5@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
-  ('e6b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student6@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false);
+  ('d1a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher1@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('d2a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher2@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e1b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student1@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e2b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student2@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e3b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student3@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e4b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student4@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e5b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student5@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e6b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student6@demo.com', extensions.crypt('Demo1234!', extensions.gen_salt('bf', 10)), now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false);
 
 -- 2. Seed Public Profiles
 insert into public.profiles (id, role, full_name) values
