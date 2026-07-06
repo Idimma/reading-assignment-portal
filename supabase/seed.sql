@@ -1,5 +1,5 @@
 -- Database Idempotent Seed File: seed.sql
--- Pre-populates teachers, students, classrooms, books, assignments, and sessions using strictly valid hex v4 UUIDs.
+-- Pre-populates teachers, students, classrooms, books, assignments, and sessions using strictly valid hex v4 UUIDs and GoTrue-compliant auth metas.
 
 -- Clear existing seed data to ensure idempotency
 truncate table public.reading_sessions cascade;
@@ -11,18 +11,18 @@ truncate table public.classrooms cascade;
 delete from public.profiles;
 delete from auth.users;
 
--- 1. Seed Supabase Auth Users
+-- 1. Seed Supabase Auth Users (with GoTrue compliance metadata JSONs)
 -- Password hash for 'Demo1234!' (bcrypt encrypted)
 -- hash: '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.'
-insert into auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, role, aud, created_at, updated_at) values
-  ('d1a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher1@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now()),
-  ('d2a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher2@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now()),
-  ('e1b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student1@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now()),
-  ('e2b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student2@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now()),
-  ('e3b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student3@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now()),
-  ('e4b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student4@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now()),
-  ('e5b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student5@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now()),
-  ('e6b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student6@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now());
+insert into auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, role, aud, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, is_sso_user) values
+  ('d1a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher1@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('d2a23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'teacher2@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e1b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student1@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e2b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student2@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e3b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student3@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e4b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student4@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e5b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student5@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false),
+  ('e6b23456-7890-4112-a314-141516171819', '00000000-0000-0000-0000-000000000000', 'student6@demo.com', '$2a$10$w850r/H08k6p3tM/4vR8t.vY4L9cR7nC89xO/5E/1P6X72F6M9F9.', now(), 'authenticated', 'authenticated', now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, false);
 
 -- 2. Seed Public Profiles
 insert into public.profiles (id, role, full_name) values
@@ -41,8 +41,6 @@ insert into public.classrooms (id, name, teacher_id) values
   ('c2c23456-7890-4112-a314-141516171819', 'Creative Reading (Grade 5)', 'd2a23456-7890-4112-a314-141516171819');
 
 -- 4. Enroll Students (Rosters)
--- Teacher 1 has students 1-4.
--- Teacher 2 has students 4-6 (Student 4 overlaps classrooms).
 insert into public.enrollments (class_id, student_id) values
   ('c1c23456-7890-4112-a314-141516171819', 'e1b23456-7890-4112-a314-141516171819'),
   ('c1c23456-7890-4112-a314-141516171819', 'e2b23456-7890-4112-a314-141516171819'),
@@ -67,42 +65,34 @@ insert into public.books (id, title, author, reading_level, content_text) values
    'Dorothy lived in the midst of the great Kansas prairies, with Uncle Henry, who was a farmer, and Aunt Em, who was the farmer’s wife. Their house was small, for the lumber to build it had to be carried by wagon many miles. There were four walls, a floor and a roof, which made one room; and this room contained a rusty looking cookstove, a cupboard for the dishes, a table, three or four chairs, and the beds. Uncle Henry and Aunt Em had a big bed in one corner, and Dorothy a little bed in another corner. There was no garret-hole at all, and no cellar-except a small hole dug in the ground, called a cyclone cellar.');
 
 -- 6. Seed Assignments
--- Assignment 1: Assigned to Class 1, Book: Alice in Wonderland, Due: In 7 Days (Active)
 insert into public.assignments (id, class_id, book_id, due_date) values
   ('a1a23456-7890-4112-a314-141516171819', 'c1c23456-7890-4112-a314-141516171819', 'b1b23456-7890-4112-a314-141516171819', current_date + interval '7 days');
 
--- Assignment 2: Assigned to Class 1, Book: Peter Pan, Due: 5 Days ago (Overdue test)
 insert into public.assignments (id, class_id, book_id, due_date) values
   ('a2a23456-7890-4112-a314-141516171819', 'c1c23456-7890-4112-a314-141516171819', 'b3b23456-7890-4112-a314-141516171819', current_date - interval '5 days');
 
 -- 7. Seed Student Progress Records
--- For Assignment 1 (Active)
 insert into public.assignment_records (id, assignment_id, student_id, status) values
   ('f1f23456-7890-4112-a314-141516171819', 'a1a23456-7890-4112-a314-141516171819', 'e1b23456-7890-4112-a314-141516171819', 'completed'),
   ('f2f23456-7890-4112-a314-141516171819', 'a1a23456-7890-4112-a314-141516171819', 'e2b23456-7890-4112-a314-141516171819', 'in_progress'),
   ('f3f23456-7890-4112-a314-141516171819', 'a1a23456-7890-4112-a314-141516171819', 'e3b23456-7890-4112-a314-141516171819', 'not_started'),
   ('f4f23456-7890-4112-a314-141516171819', 'a1a23456-7890-4112-a314-141516171819', 'e4b23456-7890-4112-a314-141516171819', 'not_started');
 
--- For Assignment 2 (Overdue)
 insert into public.assignment_records (id, assignment_id, student_id, status) values
   ('f5f23456-7890-4112-a314-141516171819', 'a2a23456-7890-4112-a314-141516171819', 'e1b23456-7890-4112-a314-141516171819', 'in_progress'),
   ('f6f23456-7890-4112-a314-141516171819', 'a2a23456-7890-4112-a314-141516171819', 'e2b23456-7890-4112-a314-141516171819', 'completed'),
   ('f7f23456-7890-4112-a314-141516171819', 'a2a23456-7890-4112-a314-141516171819', 'e3b23456-7890-4112-a314-141516171819', 'not_started');
 
 -- 8. Seed Reading Sessions (Append-only logs)
--- Student 1 read 15 mins then 10 mins (Completed)
 insert into public.reading_sessions (record_id, seconds_read) values
   ('f1f23456-7890-4112-a314-141516171819', 900),
   ('f1f23456-7890-4112-a314-141516171819', 600);
 
--- Student 2 read 12 mins (In Progress)
 insert into public.reading_sessions (record_id, seconds_read) values
   ('f2f23456-7890-4112-a314-141516171819', 720);
 
--- Overdue student 1 read 8 mins (Overdue in progress)
 insert into public.reading_sessions (record_id, seconds_read) values
   ('f5f23456-7890-4112-a314-141516171819', 480);
 
--- Overdue student 2 read 20 mins (Overdue completed)
 insert into public.reading_sessions (record_id, seconds_read) values
   ('f6f23456-7890-4112-a314-141516171819', 1200);
