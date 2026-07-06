@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 const VOCAB_DICTIONARY: Record<string, { definition: string; explanation: string }> = {
   tired: {
@@ -41,6 +42,12 @@ const VOCAB_DICTIONARY: Record<string, { definition: string; explanation: string
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+    }
+
     const { word } = await request.json();
     if (!word) {
       return NextResponse.json({ error: 'Word parameter is required' }, { status: 400 });
@@ -56,7 +63,7 @@ export async function POST(request: Request) {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch {
     return NextResponse.json({ error: 'Failed to explain word' }, { status: 500 });
   }
 }

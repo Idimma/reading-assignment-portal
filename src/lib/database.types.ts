@@ -234,6 +234,51 @@ export type Database = {
           },
         ]
       }
+      word_bookmarks: {
+        Row: {
+          id: string
+          student_id: string
+          record_id: string
+          word: string
+          definition: string
+          explanation: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          record_id: string
+          word: string
+          definition: string
+          explanation: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          record_id?: string
+          word?: string
+          definition?: string
+          explanation?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_bookmarks_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_bookmarks_record_id_fkey"
+            columns: ["record_id"]
+            isOneToOne: false
+            referencedRelation: "assignment_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

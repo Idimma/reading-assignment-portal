@@ -16,6 +16,7 @@ interface Book {
 interface Classroom {
   id: string;
   name: string;
+  studentCount: number;
 }
 
 interface Props {
@@ -30,6 +31,8 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
   const [dueDate, setDueDate] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const getErrorMessage = (err: unknown, fallback: string) =>
+    err instanceof Error ? err.message : fallback;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +44,11 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
     }
     if (!selectedClassId) {
       setError('Please select a classroom roster.');
+      return;
+    }
+    const selectedClass = classrooms.find((c) => c.id === selectedClassId);
+    if (selectedClass && selectedClass.studentCount === 0) {
+      setError('Cannot assign to an empty classroom roster.');
       return;
     }
     if (!dueDate) {
@@ -58,8 +66,8 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
       });
       router.push('/teacher');
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create reading assignment.');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to create reading assignment.'));
     } finally {
       setLoading(false);
     }
@@ -97,10 +105,18 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
                 <option value="">Choose a classroom...</option>
                 {classrooms.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.name} ({c.studentCount} {c.studentCount === 1 ? 'student' : 'students'})
                   </option>
                 ))}
               </select>
+              {(() => {
+                const sel = classrooms.find((c) => c.id === selectedClassId);
+                return sel && sel.studentCount === 0 ? (
+                  <p className="mt-2 text-xs font-semibold text-amber-600">
+                    ⚠️ This classroom roster is empty. You must enroll students before assigning books.
+                  </p>
+                ) : null;
+              })()}
             </div>
 
             <div>
@@ -111,10 +127,12 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
                 {books.map((b) => {
                   const isSelected = selectedBookId === b.id;
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={b.id}
                       onClick={() => setSelectedBookId(b.id)}
-                      className={`border rounded-2xl p-4 cursor-pointer transition-all flex flex-col gap-2 ${
+                      aria-pressed={isSelected}
+                      className={`text-left border rounded-2xl p-4 cursor-pointer transition-all flex flex-col gap-2 focus:outline-none focus:ring-2 focus:ring-violet-500/30 ${
                         isSelected
                           ? 'border-violet-500 bg-violet-50/10 ring-2 ring-violet-500/20'
                           : 'border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/30'
@@ -132,7 +150,7 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
                           <span className="text-xxs font-bold text-violet-600">Selected</span>
                         )}
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -160,7 +178,10 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
               </Link>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (() => {
+                  const sel = classrooms.find((c) => c.id === selectedClassId);
+                  return sel ? sel.studentCount === 0 : false;
+                })()}
                 className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Creating...' : 'Assign Book'}

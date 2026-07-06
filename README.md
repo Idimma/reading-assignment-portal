@@ -1,91 +1,144 @@
-# Teacher Reading Assignment Portal (Scholastic Coding Challenge)
+# Reading Assignment Portal
 
-An end-to-end, high-performance web application designed to help teachers assign public-domain classic books to students and monitor active reading time telemetry.
+Next.js 16 + Supabase app for assigning public-domain books to classrooms, tracking student reading sessions, and showing teacher progress dashboards.
 
-*   **GitHub Repository**: [https://github.com/Idimma/reading-assignment-portal](https://github.com/Idimma/reading-assignment-portal)
+## Stack
 
----
+- Next.js 16.2 App Router with `proxy.ts` for auth redirects
+- React 19 and TypeScript strict mode
+- Supabase Postgres, Auth, RLS policies, SQL migrations, and seed data
+- Server Actions for service-layer writes
+- Vitest for pure service helper coverage
 
-## 🚀 Quickstart: Local Development
+## Architecture
 
-### 1. Configure Supabase Environment Variables
-Create a `.env.local` file in the root of the project:
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```mermaid
+flowchart TD
+  Browser[Teacher or student browser] --> Next[Next.js 16 App Router]
+  Next --> Proxy[proxy.ts auth and role routing]
+  Next --> Services[src/lib/services]
+  Services --> SupabaseClient[Typed Supabase SSR client]
+  SupabaseClient --> Auth[Supabase Auth]
+  SupabaseClient --> Postgres[(Postgres + RLS)]
+  Postgres --> RPC[create_assignment RPC]
+  Postgres --> Triggers[status transition and auto-promote triggers]
+  Services --> UI[Teacher and student UI]
 ```
 
-### 2. Database Schema & Seed Data
-*   Execute `/supabase/migrations/01_schema.sql` in your Supabase SQL Editor.
-*   Execute `/supabase/seed.sql` to pre-populate mock data, books, and credentials.
+The app keeps database access inside `src/lib/services/*`. UI components call service functions, while Postgres enforces authorization with RLS and protects state transitions with triggers.
 
-### 3. Run the Development Server
+## Setup
+
+1. Install dependencies:
+
 ```bash
 npm install
+```
+
+2. Copy environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+Set:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+3. Apply database SQL in order:
+
+```text
+supabase/migrations/01_schema.sql
+supabase/migrations/02_fix_rls_fanout_and_policies.sql
+supabase/seed.sql
+```
+
+4. Start the app:
+
+```bash
 npm run dev
 ```
-Open **`http://localhost:3000`** in your browser.
 
-### 4. Running Unit Tests
+Open `http://localhost:3000`.
+
+## Demo Accounts
+
+All demo users use password `Demo1234!`.
+
+| Role | Email | Notes |
+| :--- | :--- | :--- |
+| Teacher | `teacher1@demo.com` | English Lit Homeroom, students 1-4 |
+| Teacher | `teacher2@demo.com` | Creative Reading, students 4-6 |
+| Student | `student1@demo.com` | Class 1 assignments |
+| Student | `student4@demo.com` | Enrolled in both seeded classes |
+
+## Key Behavior
+
+- Teachers create assignments through `public.create_assignment(...)`, an atomic RPC that creates the assignment and fans out student progress records in one transaction.
+- Students do not see soft-deleted assignments.
+- Opening the reader marks `not_started` records as `in_progress`.
+- Reading sessions are append-only. Dashboard minutes are derived from session rows.
+- “Logged late” appears when any session was logged after the assignment due date.
+- Status transitions follow the database rule: progress cannot revert to `not_started`.
+
+## Testing
+
+Run unit tests:
+
 ```bash
 npm run test
 ```
 
----
+Run type and lint checks:
 
-## 🔑 Demo Test Accounts
-Both teachers and students use the shared password: **`Demo1234!`**
+```bash
+npx tsc --noEmit
+npm run lint
+```
 
-| User Role | Email Address | Assigned Class / Access Roster |
+Run a production build:
+
+```bash
+npm run build
+```
+
+Current unit coverage includes:
+
+- Zod validation for login-adjacent assignment/session inputs
+- All 9 assignment status transitions
+- Reading minute aggregation and late-log detection
+
+## Manual Verification Checklist
+
+Use a freshly seeded database before browser checks.
+
+1. Sign in as `teacher1@demo.com`.
+2. Confirm only Teacher 1 assignments are visible.
+3. Create a new assignment and verify it appears with progress rows for the full class roster.
+4. Archive an assignment and verify the confirmation names the real book title.
+5. Sign out and sign in as `student1@demo.com`.
+6. Confirm archived assignments are hidden.
+7. Open a `not_started` book and confirm it becomes `in_progress`.
+8. Log a reading session and confirm minutes update.
+9. Confirm overdue assignments with after-due-date logs show `Logged late`.
+10. Probe RLS by signing in as Teacher 2 and confirming Teacher 1 classroom data is not visible.
+
+## Production Triage
+
+| Area | Current implementation | Production direction |
 | :--- | :--- | :--- |
-| **Teacher 1** | `teacher1@demo.com` | English Lit Homeroom (Grade 4) — Has access to students 1-4 |
-| **Teacher 2** | `teacher2@demo.com` | Creative Reading (Grade 5) — Has access to students 4-6 |
-| **Student 1** | `student1@demo.com` | Enrolled in English Lit Homeroom |
-| **Student 4** | `student4@demo.com` | Overlapping Student (Enrolled in both classrooms) |
+| Rostering | Static seed data | SIS integration such as Clever, ClassLink, or Google Classroom |
+| Content | Public-domain excerpts in Postgres | Licensed content pipeline with CDN-backed EPUB/PDF delivery |
+| Reading telemetry | Active tab timer and append-only session logs | Offline queue, sync conflict handling, scroll checkpoints, comprehension prompts |
+| Authorization | Supabase RLS and route proxy | Keep RLS; add audit logging, admin roles, and policy regression probes in CI |
+| Assignment creation | SQL RPC fan-out | Keep RPC; add retry-safe idempotency keys for external integrations |
+| AI vocabulary helper | Deterministic mock dictionary endpoint | Moderated LLM flow with grade-level controls, caching, observability, and fallback definitions |
+| Testing | Unit tests plus manual browser/RLS checklist | Add Playwright teacher/student flows and automated Supabase policy tests |
+| Operations | Manual SQL apply and seed | Managed migrations, preview database branches, and repeatable reset scripts |
 
----
+## AI Usage
 
-## 🏗️ Architectural Decisions
-
-### Next.js 15 App Router & Separated Service Layer
-To mitigate any "but we're a Java shop" counter-signal, all SQL queries, transactions, and business logic are isolated inside **`/src/lib/services/*`** (pure TypeScript files). This structure acts as a 1:1 analogue to the standard **Spring Boot layered architecture** (Controller $\rightarrow$ Service $\rightarrow$ Repository). The route handlers and page files function purely as controllers.
-
-### Row Level Security (RLS) & Server-Enforced Authz
-Rather than relying on client-side routing protection, all data queries are defended at the PostgreSQL database level using **Row Level Security (RLS)**. Students can only see their own assignments; teachers can only CRUD assignments inside classrooms they teach.
-
-### Append-Only Telemetry Logs (`reading_sessions`)
-Instead of updating a single mutable `minutes_read` column which is prone to concurrency updates and race conditions, we implement an **append-only reading log**. Total minutes read are dynamically computed using SQL `SUM` aggregations, providing a complete historical audit trail of student engagement sessions.
-
-### Database-Level State Machine
-Status state machines and auto-promotion (e.g. status shifting to `in_progress` once a student starts reading) are managed directly via **PostgreSQL Database Triggers**. This guarantees data integrity even if the backend service layer is bypassed.
-
----
-
-## ⏱️ Telemetry & AI Value-Adds (The Scholastic Differentiator)
-
-1.  **Active Telemetry tracking (Anti-Cheating)**:
-    The Book Reader component implements the browser **Visibility API**. If the student switches browser tabs or minimizes their screen, the reading timer automatically pauses. It compiles and logs the exact active seconds read when they click "Log Session".
-2.  **Vocabulary Explainer Widget (Mock AI)**:
-    Students can double-click/highlight any complex word inside the Reader (like *rabbit*, *tired*, or *cyclone*) to trigger a callout popup. This routes to `/api/v1/explain`, returning simplified definitions and age-appropriate example sentences matching a 3rd-to-5th grade reading level, showcasing your alignment with Scholastic's *AI enablement* scope.
-
----
-
-## 📊 Triage Table: Production Benchmarking & Tradeoffs
-
-To deliver this challenge within a strict development timeframe, the following tradeoffs were accepted and would be addressed in a production release:
-
-| Domain Area | Prototype Hack / Current Approach | Production Target | Tradeoff / Rationale |
-| :--- | :--- | :--- | :--- |
-| **Classroom Provisioning** | Static DB seed script | Integrate with SIS Rostering APIs (Clever, ClassLink, Google Classroom) | Saves time. Hand-rolling user rosters in production leads to sync drifts. |
-| **Book Licensing / DRM** | Public domain text stored inside PostgreSQL columns | EPUB/PDF parser linking to an authenticated Content Distribution CDN | Prototypes need open contents. Production media requires copyright defense. |
-| **Offline Synchronization** | Assumes stable internet connection for logs | Save logs to IndexedDB and sync asynchronously when online | Simple prototype. Students reading in offline environments would lose logs. |
-| **Comprehension Audits** | Time-based telemetry tracking | Comprehension check-ins, quiz prompts, and scroll heatmaps | Raw time doesn't prove reading. Active audits ensure academic integrity. |
-
----
-
-## 🤖 How I Used AI Tooling (Role-Specific)
-
-Following your team's developer velocity guidelines, AI was utilized as a **force multiplier**:
-1.  **Scaffolding**: Used AI to draft standard tailwind component pages, forms, and service code structures.
-2.  **Unit Tests**: Prompted AI to generate the 8 Vitest unit tests verifying Zod schema limits.
-3.  **Human Oversight (My Role)**: Corrected the AI when it proposed *ChromaDB* (which would fail compilation on newer Python 3.14 setups), refactoring to LlamaIndex built-in stores. Debugged the Vitest run by recognizing Zod's strict RFC 4122 variant regex (`[89abAB]`) and replacing invalid mock UUIDs to resolve the test failures.
+AI assistance was used to accelerate implementation and documentation, but the important decisions were reviewed against the running codebase and database schema. In particular, the database contract, RLS boundaries, Next 16 `proxy.ts` migration, type checks, and unit tests were verified locally instead of accepted from generated code. The vocabulary endpoint is a mock AI-style feature, not a live LLM integration.

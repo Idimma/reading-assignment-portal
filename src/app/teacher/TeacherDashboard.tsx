@@ -12,6 +12,7 @@ interface StudentRecord {
   statusUpdatedAt: string;
   studentName: string;
   minutesRead: number;
+  hasLateLog: boolean;
 }
 
 interface Assignment {
@@ -19,7 +20,7 @@ interface Assignment {
   dueDate: string;
   createdAt: string;
   classroom: { id: string; name: string };
-  book: { id: string; title: string; author: string; reading_level: string };
+  book: { id: string; title: string; author: string; reading_level: string | null };
   records: StudentRecord[];
   stats: {
     totalStudents: number;
@@ -27,6 +28,7 @@ interface Assignment {
     inProgressCount: number;
     notStartedCount: number;
     minutesRead: number;
+    hasLateLog: boolean;
   };
 }
 
@@ -44,17 +46,20 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
     router.push('/login');
   };
 
+  const getErrorMessage = (error: unknown, fallback: string) =>
+    error instanceof Error ? error.message : fallback;
+
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to archive this reading assignment? Charlotte\'s Web data will remain safe.')) {
+  const handleDelete = async (assignment: Assignment) => {
+    if (confirm(`Are you sure you want to archive "${assignment.book.title}"? Student reading data will remain safe.`)) {
       try {
-        await softDeleteAssignment(id);
-        setAssignments(assignments.filter((a) => a.id !== id));
-      } catch (err: any) {
-        alert(err.message || 'Failed to archive assignment.');
+        await softDeleteAssignment(assignment.id);
+        setAssignments(assignments.filter((a) => a.id !== assignment.id));
+      } catch (err: unknown) {
+        alert(getErrorMessage(err, 'Failed to archive assignment.'));
       }
     }
   };
@@ -163,7 +168,7 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
                             {expandedId === item.id ? 'Hide Details' : 'View Details'}
                           </button>
                           <button
-                            onClick={() => handleDelete(item.id)}
+                            onClick={() => handleDelete(item)}
                             className="text-xs font-semibold text-red-500 hover:text-red-700 hover:underline cursor-pointer"
                           >
                             Archive
@@ -190,6 +195,11 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
                                   </div>
                                   <div className="flex flex-col items-end gap-1.5">
                                     {getStatusBadge(rec.status)}
+                                    {rec.hasLateLog && (
+                                      <span className="px-2 py-1 text-xs font-semibold text-orange-700 bg-orange-50 border border-orange-200 rounded-lg">
+                                        Logged late
+                                      </span>
+                                    )}
                                     <span className="text-xs font-bold text-slate-800">{rec.minutesRead} mins read</span>
                                   </div>
                                 </div>

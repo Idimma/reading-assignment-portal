@@ -10,9 +10,8 @@ export const createAssignmentSchema = z.object({
   classId: z.string().uuid('Invalid class ID'),
   dueDate: z.string().refine((val) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const date = new Date(val);
-    return date >= today;
+    const todayStr = today.toISOString().split('T')[0];
+    return val >= todayStr;
   }, 'Due date cannot be in the past'),
 });
 

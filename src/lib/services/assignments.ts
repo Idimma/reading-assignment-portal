@@ -2,9 +2,13 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAssignmentSchema, CreateAssignmentInput } from './schemas';
+import { aggregateReadingSessions, aggregateStatusCounts } from './progress';
 
 export async function getBooks() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthenticated');
+
   const { data, error } = await supabase
     .from('books')
     .select('*')
@@ -16,24 +20,35 @@ export async function getBooks() {
 
 export async function getClassrooms() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthenticated');
+
   const { data, error } = await supabase
     .from('classrooms')
-    .select('*')
+    .select('id, name, enrollments(student_id)')
     .order('name');
 
   if (error) throw new Error(error.message);
-  return data;
+  
+  return data.map((c) => ({
+    id: c.id,
+    name: c.name,
+    studentCount: c.enrollments?.length || 0,
+  }));
 }
 
 export async function getClassroomRoster(classId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthenticated');
+
   const { data, error } = await supabase
     .from('enrollments')
     .select('profiles(id, full_name)')
     .eq('class_id', classId);
 
   if (error) throw new Error(error.message);
-  return data.map((d: any) => d.profiles);
+  return data.flatMap((enrollment) => enrollment.profiles ? [enrollment.profiles] : []);
 }
 
 export async function createAssignment(input: CreateAssignmentInput) {
@@ -43,51 +58,27 @@ export async function createAssignment(input: CreateAssignmentInput) {
   }
 
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthenticated');
 
-  // 1. Create the Assignment
+  const { data: assignmentId, error: rpcError } = await supabase.rpc('create_assignment', {
+    p_book_id: parsed.data.bookId,
+    p_class_id: parsed.data.classId,
+    p_due_date: parsed.data.dueDate,
+  });
+
+  if (rpcError || !assignmentId) {
+    throw new Error(rpcError?.message || 'Failed to create assignment record');
+  }
+
   const { data: assignment, error: assignmentError } = await supabase
     .from('assignments')
-    .insert({
-      book_id: parsed.data.bookId,
-      class_id: parsed.data.classId,
-      due_date: parsed.data.dueDate,
-    })
     .select()
+    .eq('id', assignmentId)
     .single();
 
   if (assignmentError || !assignment) {
-    throw new Error(assignmentError?.message || 'Failed to create assignment record');
-  }
-
-  // 2. Fetch all students enrolled in the class
-  const { data: enrollments, error: enrollError } = await supabase
-    .from('enrollments')
-    .select('student_id')
-    .eq('class_id', parsed.data.classId);
-
-  if (enrollError) {
-    throw new Error(enrollError.message);
-  }
-
-  if (enrollments.length === 0) {
-    return assignment; // No students enrolled to fan out to
-  }
-
-  // 3. Create progress records for each student (atomic fan-out)
-  const progressRecords = enrollments.map((enr) => ({
-    assignment_id: assignment.id,
-    student_id: enr.student_id,
-    status: 'not_started' as const,
-  }));
-
-  const { error: recordsError } = await supabase
-    .from('assignment_records')
-    .insert(progressRecords);
-
-  if (recordsError) {
-    // If progress records creation fails, delete the parent assignment to avoid orphaned rows
-    await supabase.from('assignments').delete().eq('id', assignment.id);
-    throw new Error(recordsError.message);
+    throw new Error(assignmentError?.message || 'Failed to load created assignment');
   }
 
   return assignment;
@@ -95,6 +86,8 @@ export async function createAssignment(input: CreateAssignmentInput) {
 
 export async function getTeacherAssignments() {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthenticated');
   
   // Get all assignments with joined book, classroom, and progress record information
   const { data, error } = await supabase
@@ -119,22 +112,13 @@ export async function getTeacherAssignments() {
   if (error) throw new Error(error.message);
   
   // Format aggregate counts for response dashboard
-  return data.map((item: any) => {
+  return data.map((item) => {
     const records = item.assignment_records || [];
-    const totalStudents = records.length;
-    
-    // Calculate total minutes read across all student progress records
-    let totalSeconds = 0;
-    records.forEach((rec: any) => {
-      const sessions = rec.reading_sessions || [];
-      sessions.forEach((s: any) => {
-        totalSeconds += s.seconds_read;
-      });
-    });
-
-    const completedCount = records.filter((r: any) => r.status === 'completed').length;
-    const inProgressCount = records.filter((r: any) => r.status === 'in_progress').length;
-    const notStartedCount = records.filter((r: any) => r.status === 'not_started').length;
+    const statusCounts = aggregateStatusCounts(records.map((record) => record.status));
+    const assignmentSessionSummary = aggregateReadingSessions(
+      records.flatMap((record) => record.reading_sessions || []),
+      item.due_date
+    );
 
     return {
       id: item.id,
@@ -142,26 +126,25 @@ export async function getTeacherAssignments() {
       createdAt: item.created_at,
       classroom: item.classrooms,
       book: item.books,
-      records: records.map((rec: any) => {
-        let studentSeconds = 0;
-        (rec.reading_sessions || []).forEach((s: any) => {
-          studentSeconds += s.seconds_read;
-        });
+      records: records.map((rec) => {
+        const studentSessionSummary = aggregateReadingSessions(
+          rec.reading_sessions || [],
+          item.due_date
+        );
 
         return {
           id: rec.id,
           status: rec.status,
           statusUpdatedAt: rec.status_updated_at,
-          studentName: rec.profiles.full_name,
-          minutesRead: Math.round(studentSeconds / 60),
+          studentName: rec.profiles?.full_name || 'Unknown student',
+          minutesRead: studentSessionSummary.minutesRead,
+          hasLateLog: studentSessionSummary.hasLateLog,
         };
       }),
       stats: {
-        totalStudents,
-        completedCount,
-        inProgressCount,
-        notStartedCount,
-        minutesRead: Math.round(totalSeconds / 60),
+        ...statusCounts,
+        minutesRead: assignmentSessionSummary.minutesRead,
+        hasLateLog: assignmentSessionSummary.hasLateLog,
       }
     };
   });
@@ -169,6 +152,9 @@ export async function getTeacherAssignments() {
 
 export async function softDeleteAssignment(assignmentId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthenticated');
+
   const { error } = await supabase
     .from('assignments')
     .update({ deleted_at: new Date().toISOString() })

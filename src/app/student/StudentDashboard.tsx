@@ -22,6 +22,7 @@ interface ReadingRecord {
   statusUpdatedAt: string;
   minutesRead: number;
   isOverdue: boolean;
+  hasLateLog: boolean;
   book: Book;
 }
 
@@ -37,6 +38,9 @@ export default function StudentDashboard({ initialReadings }: Props) {
     await logout();
     router.push('/login');
   };
+
+  const getErrorMessage = (error: unknown, fallback: string) =>
+    error instanceof Error ? error.message : fallback;
 
   const handleStatusToggle = async (recordId: string, currentStatus: string) => {
     // completed -> in_progress (reopen) is allowed
@@ -54,8 +58,8 @@ export default function StudentDashboard({ initialReadings }: Props) {
         )
       );
       router.refresh();
-    } catch (err: any) {
-      alert(err.message || 'Status transition rejected.');
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, 'Status transition rejected.'));
     }
   };
 
@@ -118,6 +122,11 @@ export default function StudentDashboard({ initialReadings }: Props) {
                       {item.isOverdue && (
                         <span className="px-2 py-0.5 text-xxs font-bold text-red-700 bg-red-50 border border-red-200 rounded-md">
                           Overdue
+                        </span>
+                      )}
+                      {item.hasLateLog && (
+                        <span className="px-2 py-0.5 text-xxs font-bold text-orange-700 bg-orange-50 border border-orange-200 rounded-md">
+                          Logged late
                         </span>
                       )}
                     </div>

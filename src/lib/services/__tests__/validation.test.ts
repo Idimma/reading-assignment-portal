@@ -103,4 +103,16 @@ describe('Assignment Creation Schema Validation', () => {
     
     expect(validDate.success).toBe(true);
   });
+
+  it('should accept today as due date', () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const validDate = createAssignmentSchema.safeParse({
+      bookId: MOCK_BOOK_ID,
+      classId: MOCK_CLASS_ID,
+      dueDate: todayStr,
+    });
+    
+    expect(validDate.success).toBe(true);
+  });
 });
