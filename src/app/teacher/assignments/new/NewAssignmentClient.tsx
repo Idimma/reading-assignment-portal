@@ -92,7 +92,7 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="w-full sm:max-w-xs px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white text-sm"
+                className="w-full sm:max-w-xs px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white text-sm text-slate-900"
               >
                 <option value="">Choose a classroom...</option>
                 {classrooms.map((c) => (
@@ -147,7 +147,7 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
                 min={todayStr}
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full sm:max-w-xs px-3 py-2 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white text-sm"
+                className="w-full sm:max-w-xs px-3 py-2 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white text-sm text-slate-900"
               />
             </div>
 

@@ -6,7 +6,7 @@ import { loginSchema, LoginInput } from './schemas';
 export async function login(input: LoginInput) {
   const parsed = loginSchema.safeParse(input);
   if (!parsed.success) {
-    throw new Error(parsed.error.errors[0].message);
+    throw new Error(parsed.error.issues[0].message);
   }
 
   const supabase = await createClient();
@@ -16,6 +16,7 @@ export async function login(input: LoginInput) {
   });
 
   if (error) {
+    console.error("Supabase signIn error details:", error.message, error.status);
     throw new Error(error.message);
   }
 

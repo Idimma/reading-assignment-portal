@@ -39,7 +39,7 @@ export async function getClassroomRoster(classId: string) {
 export async function createAssignment(input: CreateAssignmentInput) {
   const parsed = createAssignmentSchema.safeParse(input);
   if (!parsed.success) {
-    throw new Error(parsed.error.errors[0].message);
+    throw new Error(parsed.error.issues[0].message);
   }
 
   const supabase = await createClient();

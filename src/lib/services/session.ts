@@ -79,7 +79,7 @@ export async function getBookContent(recordId: string) {
 
   if (error || !data) throw new Error('Unable to retrieve book content.');
 
-  const book = data.assignments.books;
+  const book = (data as any).assignments.books;
   return {
     title: book.title,
     author: book.author,
@@ -90,7 +90,7 @@ export async function getBookContent(recordId: string) {
 export async function logReadingSession(input: LogSessionInput) {
   const parsed = logSessionSchema.safeParse(input);
   if (!parsed.success) {
-    throw new Error(parsed.error.errors[0].message);
+    throw new Error(parsed.error.issues[0].message);
   }
 
   const supabase = await createClient();
@@ -114,7 +114,7 @@ export async function logReadingSession(input: LogSessionInput) {
 export async function updateAssignmentStatus(input: UpdateStatusInput) {
   const parsed = updateStatusSchema.safeParse(input);
   if (!parsed.success) {
-    throw new Error(parsed.error.errors[0].message);
+    throw new Error(parsed.error.issues[0].message);
   }
 
   const supabase = await createClient();
