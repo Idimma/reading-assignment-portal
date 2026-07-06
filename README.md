@@ -3,7 +3,6 @@
 An end-to-end, high-performance web application designed to help teachers assign public-domain classic books to students and monitor active reading time telemetry.
 
 *   **GitHub Repository**: [https://github.com/Idimma/reading-assignment-portal](https://github.com/Idimma/reading-assignment-portal)
-*   **Local Directory**: `/Users/mac1/IdeaProjects/@idimma/reading-assignment-portal/`
 
 ---
 
