@@ -23,8 +23,9 @@ export default function LoginPage() {
       } else {
         router.push('/student');
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please verify credentials.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : null;
+      setError(message && message !== '{}' ? message : 'Login failed. Please verify credentials.');
     } finally {
       setLoading(false);
     }

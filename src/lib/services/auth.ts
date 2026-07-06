@@ -3,6 +3,18 @@
 import { createClient } from '@/lib/supabase/server';
 import { loginSchema, LoginInput } from './schemas';
 
+const getLoginErrorMessage = (error: { message?: string; status?: number }) => {
+  if (error.status && error.status >= 500) {
+    return 'Authentication service is currently unavailable. Please try again later.';
+  }
+
+  if (!error.message || error.message === '{}') {
+    return 'Login failed. Please verify credentials.';
+  }
+
+  return error.message;
+};
+
 export async function login(input: LoginInput) {
   const parsed = loginSchema.safeParse(input);
   if (!parsed.success) {
@@ -16,8 +28,8 @@ export async function login(input: LoginInput) {
   });
 
   if (error) {
-    console.error("Supabase signIn error details:", error.message, error.status);
-    throw new Error(error.message);
+    console.error('Supabase signIn error details:', error.message, error.status);
+    throw new Error(getLoginErrorMessage(error));
   }
 
   // Fetch role for redirect path
@@ -32,7 +44,6 @@ export async function login(input: LoginInput) {
   }
 
   return {
-    user: data.user,
     role: profile.role,
   };
 }

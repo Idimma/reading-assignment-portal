@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
+import type { WebSocketLikeConstructor } from '@supabase/realtime-js';
 import { cookies } from 'next/headers';
+import WebSocket from 'ws';
 
 export const createClient = async () => {
   const cookieStore = await cookies();
@@ -12,7 +14,13 @@ export const createClient = async () => {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(
+          cookiesToSet: {
+            name: string;
+            value: string;
+            options?: Parameters<typeof cookieStore.set>[2];
+          }[]
+        ) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
@@ -23,6 +31,9 @@ export const createClient = async () => {
             // user sessions.
           }
         },
+      },
+      realtime: {
+        transport: WebSocket as unknown as WebSocketLikeConstructor,
       },
     }
   );
