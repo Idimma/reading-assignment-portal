@@ -84,22 +84,26 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
         <h1 className="text-xl font-bold text-slate-800 tracking-tight">Create Reading Assignment</h1>
       </header>
 
-      <main className="max-w-4xl w-full mx-auto p-6 md:p-8">
+      <main id="main-content" className="max-w-4xl w-full mx-auto p-6 md:p-8">
         <div className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-sm">
           <form className="space-y-8" onSubmit={handleSubmit}>
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 text-sm text-red-600 rounded-xl">
+              <div id="assignment-form-error" role="alert" className="p-4 bg-red-50 border border-red-200 text-sm text-red-600 rounded-xl">
                 {error}
               </div>
             )}
 
-            <div>
-              <label className="block text-base font-bold text-slate-900 mb-2">
+            <fieldset>
+              <legend className="block text-base font-bold text-slate-900 mb-2">
                 1. Select Classroom Roster
-              </label>
+              </legend>
               <select
+                id="classroom"
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
+                aria-label="Classroom roster"
+                aria-describedby={error ? 'assignment-form-error' : undefined}
+                aria-invalid={Boolean(error && !selectedClassId)}
                 className="w-full sm:max-w-xs px-3 py-2.5 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white text-sm text-slate-900"
               >
                 <option value="">Choose a classroom...</option>
@@ -112,17 +116,17 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
               {(() => {
                 const sel = classrooms.find((c) => c.id === selectedClassId);
                 return sel && sel.studentCount === 0 ? (
-                  <p className="mt-2 text-xs font-semibold text-amber-600">
+                  <p id="empty-roster-warning" className="mt-2 text-xs font-semibold text-amber-600">
                     ⚠️ This classroom roster is empty. You must enroll students before assigning books.
                   </p>
                 ) : null;
               })()}
-            </div>
+            </fieldset>
 
-            <div>
-              <label className="block text-base font-bold text-slate-900 mb-3">
+            <fieldset>
+              <legend className="block text-base font-bold text-slate-900 mb-3">
                 2. Choose a Book from Catalog
-              </label>
+              </legend>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {books.map((b) => {
                   const isSelected = selectedBookId === b.id;
@@ -132,6 +136,7 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
                       key={b.id}
                       onClick={() => setSelectedBookId(b.id)}
                       aria-pressed={isSelected}
+                      aria-label={`Select ${b.title} by ${b.author}`}
                       className={`text-left border rounded-2xl p-4 cursor-pointer transition-all flex flex-col gap-2 focus:outline-none focus:ring-2 focus:ring-violet-500/30 ${
                         isSelected
                           ? 'border-violet-500 bg-violet-50/10 ring-2 ring-violet-500/20'
@@ -154,20 +159,24 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
 
-            <div>
-              <label className="block text-base font-bold text-slate-900 mb-2">
+            <fieldset>
+              <legend className="block text-base font-bold text-slate-900 mb-2">
                 3. Choose Due Date
-              </label>
+              </legend>
               <input
+                id="due-date"
                 type="date"
                 min={todayStr}
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
+                aria-label="Due date"
+                aria-describedby={error ? 'assignment-form-error' : undefined}
+                aria-invalid={Boolean(error && !dueDate)}
                 className="w-full sm:max-w-xs px-3 py-2 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white text-sm text-slate-900"
               />
-            </div>
+            </fieldset>
 
             <div className="border-t border-slate-100 pt-6 flex justify-end gap-3">
               <Link
@@ -182,7 +191,7 @@ export default function NewAssignmentClient({ books, classrooms }: Props) {
                   const sel = classrooms.find((c) => c.id === selectedClassId);
                   return sel ? sel.studentCount === 0 : false;
                 })()}
-                className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:ring-offset-2"
               >
                 {loading ? 'Creating...' : 'Assign Book'}
               </button>

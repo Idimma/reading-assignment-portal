@@ -69,9 +69,9 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
       case 'completed':
         return <span className="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg">Completed</span>;
       case 'in_progress':
-        return <span className="px-2 py-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg">In Progress</span>;
+        return <span className="px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg">In progress</span>;
       default:
-        return <span className="px-2 py-1 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-200 rounded-lg">Not Started</span>;
+        return <span className="px-2 py-1 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-200 rounded-lg">Not started</span>;
     }
   };
 
@@ -84,13 +84,13 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
         </div>
         <button
           onClick={handleLogout}
-          className="text-sm font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 rounded-xl px-4 py-2 transition-all"
+          className="text-sm font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 rounded-xl px-4 py-2 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/40"
         >
           Sign Out
         </button>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 flex flex-col gap-8">
+      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 flex flex-col gap-8">
         
         <div className="flex justify-between items-center flex-wrap gap-4">
           <div>
@@ -99,7 +99,7 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
           </div>
           <Link
             href="/teacher/assignments/new"
-            className="inline-flex items-center justify-center px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all transform hover:-translate-y-0.5"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold text-sm rounded-xl shadow-md transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-violet-500/40 focus:ring-offset-2"
           >
             Create Reading Assignment
           </Link>
@@ -120,23 +120,21 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
         ) : (
           <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
             <table className="min-w-full divide-y divide-slate-100 text-left text-sm">
+              <caption className="sr-only">Active reading assignments and student progress summaries</caption>
               <thead className="bg-slate-50 text-slate-500 font-bold text-xs uppercase tracking-wider">
                 <tr>
-                  <th className="px-6 py-4">Book Title</th>
-                  <th className="px-6 py-4">Class</th>
-                  <th className="px-6 py-4">Due Date</th>
-                  <th className="px-6 py-4">Progress Breakdown</th>
-                  <th className="px-6 py-4 text-center">Total Min</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th scope="col" className="px-6 py-4">Book Title</th>
+                  <th scope="col" className="px-6 py-4">Class</th>
+                  <th scope="col" className="px-6 py-4">Due Date</th>
+                  <th scope="col" className="px-6 py-4">Progress Breakdown</th>
+                  <th scope="col" className="px-6 py-4 text-center">Total Min</th>
+                  <th scope="col" className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {assignments.map((item) => (
                   <React.Fragment key={item.id}>
-                    <tr 
-                      className={`hover:bg-slate-50/50 cursor-pointer transition-all ${expandedId === item.id ? 'bg-slate-50/30' : ''}`}
-                      onClick={() => toggleExpand(item.id)}
-                    >
+                    <tr className={`transition-all ${expandedId === item.id ? 'bg-slate-50/30' : ''}`}>
                       <td className="px-6 py-4">
                         <div className="font-semibold text-slate-900">{item.book.title}</div>
                         <div className="text-xs text-slate-400">{item.book.author}</div>
@@ -147,29 +145,31 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-1.5 flex-wrap">
-                          <span className="px-2 py-0.5 text-xxs font-bold text-emerald-700 bg-emerald-50 rounded-md" title="Completed">
-                            {item.stats.completedCount} Done
+                          <span className="px-2 py-0.5 text-xxs font-bold text-slate-500 bg-slate-50 border border-slate-200 rounded-md" title="Not started">
+                            {item.stats.notStartedCount} Not started
                           </span>
-                          <span className="px-2 py-0.5 text-xxs font-bold text-amber-700 bg-amber-50 rounded-md" title="In Progress">
-                            {item.stats.inProgressCount} Active
+                          <span className="px-2 py-0.5 text-xxs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-md" title="In progress">
+                            {item.stats.inProgressCount} In progress
                           </span>
-                          <span className="px-2 py-0.5 text-xxs font-bold text-slate-500 bg-slate-50 rounded-md" title="Not Started">
-                            {item.stats.notStartedCount} Pending
+                          <span className="px-2 py-0.5 text-xxs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md" title="Completed">
+                            {item.stats.completedCount} Completed
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 font-bold text-slate-900 text-center">{item.stats.minutesRead} m</td>
-                      <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => toggleExpand(item.id)}
-                            className="text-xs font-semibold text-violet-600 hover:text-violet-700 hover:underline cursor-pointer"
+                            aria-expanded={expandedId === item.id}
+                            aria-controls={`assignment-details-${item.id}`}
+                            className="text-xs font-semibold text-violet-600 hover:text-violet-700 hover:underline cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500/40 rounded"
                           >
                             {expandedId === item.id ? 'Hide Details' : 'View Details'}
                           </button>
                           <button
                             onClick={() => handleDelete(item)}
-                            className="text-xs font-semibold text-red-500 hover:text-red-700 hover:underline cursor-pointer"
+                            className="text-xs font-semibold text-red-500 hover:text-red-700 hover:underline cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500/40 rounded"
                           >
                             Archive
                           </button>
@@ -179,7 +179,7 @@ export default function TeacherDashboard({ initialAssignments }: Props) {
 
                     {expandedId === item.id && (
                       <tr>
-                        <td colSpan={6} className="bg-slate-50/30 px-6 py-4 border-t border-slate-100">
+                        <td id={`assignment-details-${item.id}`} colSpan={6} className="bg-slate-50/30 px-6 py-4 border-t border-slate-100">
                           <div className="text-slate-800 font-bold text-xs uppercase tracking-wider mb-3">Student Status Details</div>
                           {item.records.length === 0 ? (
                             <p className="text-xs italic text-slate-400">No students are currently assigned to this classroom roster.</p>

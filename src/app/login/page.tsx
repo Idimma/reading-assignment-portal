@@ -37,7 +37,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <main id="main-content" className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute top-[-10%] left-[20%] w-[50vw] h-[50vw] bg-radial from-violet-100 to-transparent blur-3xl -z-10 pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -56,7 +56,7 @@ export default function LoginPage() {
         <div className="bg-white py-8 px-4 shadow-sm border border-slate-200/80 rounded-2xl sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 text-sm text-red-600 rounded-xl">
+              <div id="login-error" role="alert" className="p-4 bg-red-50 border border-red-200 text-sm text-red-600 rounded-xl">
                 {error}
               </div>
             )}
@@ -73,6 +73,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  aria-describedby={error ? 'login-error' : undefined}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white transition-all text-sm text-slate-900"
                   placeholder="name@demo.com"
                 />
@@ -91,6 +92,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  aria-describedby={error ? 'login-error' : undefined}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 bg-slate-50 focus:bg-white transition-all text-sm text-slate-900"
                   placeholder="••••••••"
                 />
@@ -133,6 +135,6 @@ export default function LoginPage() {
 
         </div>
       </div>
-    </div>
+    </main>
   );
 }
