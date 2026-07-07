@@ -16,7 +16,7 @@ The portal supports:
 
 | Resource | URL |
 |---|---|
-| Frontend | `TODO: add deployed frontend URL` |
+| Frontend | [`Frontend`](https://reading-assignment-portal-lime.vercel.app/login) |
 | GitHub Repository | https://github.com/Idimma/reading-assignment-portal |
 
 > The application is a full-stack Next.js project with no separate backend service. Both the UI and all server actions are deployed as a single Vercel deployment connected to a hosted Supabase project.
